@@ -90,24 +90,22 @@
           }
         }
       }
-      var defaultFileName, shortFileName, longFilename;
+
       for (var k = 0, m = files.length; k < m; k++) {
         // 1. load base (eg, Messages.properties)
-        defaultFileName = settings.path + files[k] + '.properties';
+        loadAndParseFile(settings.path + files[k] + '.properties', settings);
         // 2. with language code (eg, Messages_pt.properties)
         var shortCode = settings.language.substring(0, 2);
         if (languages.length == 0 || $.inArray(shortCode, languages) != -1) {
-          shortFileName = settings.path + files[k] + '_' + shortCode + '.properties';
+          loadAndParseFile(settings.path + files[k] + '_' + shortCode + '.properties', settings);
         }
         // 3. with language code and country code (eg, Messages_pt_BR.properties)
         if (settings.language.length >= 5) {
           var longCode = settings.language.substring(0, 5);
           if (languages.length == 0 || $.inArray(longCode, languages) != -1) {
-            longFileName = settings.path + files[k] + '_' + longCode + '.properties';
+            loadAndParseFile(settings.path + files[k] + '_' + longCode + '.properties', settings);
           }
         }
-        loadAndParseFiles([defaultFileName,shortFileName,longFileName], settings);
-        defaultFileName = shortFileName = longFileName = null;
       }
 
       // call callback
@@ -288,20 +286,10 @@
       }
   }
 
-  
-  function loadAndParseFiles(filenames, settings) {
-	  if (filenames!=null && filenames.length > 0) {
-		  loadAndParseFile(filenames[0],settings,function(){
-			  filenames.shift();
-			  loadAndParseFiles(filenames,settings)
-		  });
-	  }
-  }
-  
   /** Load and parse .properties files */
-  function loadAndParseFile(filename, settings,next) {
-  	if (filename!=null) {
-     $.ajax({
+  function loadAndParseFile(filename, settings) {
+
+    $.ajax({
       url: filename,
       async: settings.async,
       cache: settings.cache,
@@ -309,15 +297,13 @@
       success: function (data, status) {
 
         parseData(data, settings.mode);
-        next();
         callbackIfComplete(settings);
       },
       error: function (jqXHR, textStatus, errorThrown) {
         console.log('Failed to download or parse ' + filename);
         callbackIfComplete(settings);
       }
-     });
-    }
+    });
   }
 
   /** Parse .properties files */
